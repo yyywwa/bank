@@ -76,6 +76,7 @@ private:
 		start = new T[n]();
 		finish = start;
 		end_of_storage = start + n;
+		std::cout<<"what ther is vector creat"<<std::endl;
 	}
 
 public:
@@ -252,10 +253,7 @@ public:
 		if (n < size())
 			return *(start + n);
 		else
-			std::cout<<"-------------------error------------------------"<<std::endl;
-			std::cout<<"Crossing the line in ____"<<n<<"____"<<std::endl;
-			std::cout<<"-------------------error------------------------"<<std::endl;
-			exit(-1);
+			throw "Crossing the line";
 	}
 
 	reference front() { return *start; }

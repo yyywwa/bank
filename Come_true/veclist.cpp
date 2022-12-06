@@ -30,7 +30,7 @@ public:
 
 	void operator=(veclist& V) {
 		size_type size = V.size();
-		if(capacity() > size){
+		if(index.capacity() > size){
 			clear();//使用原空间
 			for(size_type i = 0;i < size;++i)
 				push_back(V[i]);
@@ -50,7 +50,7 @@ public:
 		if (index.size() != 0)
 			clear();
 		size_type size = arraySize(first);
-		if (size > capacity())
+		if (size > index.capacity())
 			realloc(size * 2);
 		for (size_type i = 0; i < size; ++i)
 			push_back(*(first + i));
@@ -67,8 +67,12 @@ public:
 	}
 
 	void push_back(const T& value) {
-		if (index.size() == capacity())
+		if (index.size() == index.capacity()){
 			index.redouble();
+			iterator temp = new T;
+			*temp = value;
+			index.push_back(temp);
+		}
 		if(index[index.size()] == nullptr){
 			iterator temp = new T;
 			*temp = value;
@@ -79,12 +83,12 @@ public:
 		}
 	}
 	void push_back(T* pointer){
-		if (index.size() == capacity())
+		if (index.size() == index.capacity())
 			index.redouble();
-		if(index[index.size()] == nullptr){
+		if(*(index.end()) == nullptr){
 			index.push_back(pointer);
 		}else{
-			index[index.size()] = pointer;
+			*(index.end()) = pointer;
 			index.add_finish();	
 		}
 	}
@@ -131,7 +135,7 @@ public:
 	}
 
 	void insert(size_type first,size_type n,iterator _first){
-		if(index.size()+n > capacity())
+		if(index.size()+n > index.capacity())
 			index.keep_realloc((index.size()+n) * 2);
 		iterator temp[n];
 		for(size_type i = 0;i < n;++i){
@@ -162,33 +166,33 @@ public:
 	size_type capacity() { return index.capacity(); }
 
 	reference operator[](size_type n) {
-		if(n >= size()){
+		if(n >= index.size()){
 			iterator temp = nullptr;
-			for(size_type i = size();i <= n;++i){
-				temp = new T;
+			for(size_type i = index.size();i <= n;++i){
+				iterator temp = new T;
 				index[i] = temp;	
 			}
 		}
 		return *index[n];
 	}
 
-	reference at(size_type n){
-		if (n < size()){
-			return *(index[n]);}
-		else{
-			std::cout<<"-------------------error------------------------"<<std::endl;
-			std::cout<<"Crossing the line in ____"<<n<<"____"<<std::endl;
-			std::cout<<"-------------------error------------------------"<<std::endl;
-			exit(-1);
-		}
-	}
+	reference at(size_type n){return *(index.at(n));}
 
-	size_type find(size_type first, size_type last, const T& value) {
-		size_type temp = first;
-		for (; first != last; ++first)
-			if (*index[first] == value)
+	size_type begin(){return 0;}
+	
+	size_type end(){return index.size();}
+
+	template <typename P>
+	size_type find(size_type first, size_type last, const P& value) {
+		size_type size = index.size();
+		for (; first != last && first<size; ++first){
+			if (*index[first] == value){
+				return first;
 				break;
-		return first == this->size() ? temp : first;
+			}
+		}
+		return -1;
 	}
 
+	bool empty(){return index.empty();}
 };

@@ -1,173 +1,179 @@
-#include"./veclist.cpp"
-#include"./account.h"
-#include<sstream>
-#include<fstream>
-#include<stdexcept>
-#include<string>
+#include"./Header/account.h"
+#define _DATE_SEPARATOR_ '/'
 using namespace std;
-void getline(std::istream& in, std::string& desc) {
-	desc.clear();
-	char temp[20];
-	in.getline(temp, 20);
-	desc.append(temp);
+char option;//(a)add account (d)deposit (w)withdraw (s)show 
+            //(c)change day (n)next month (q)query (e)exit 
+int day;
+veclist<account*>::size_type idx;
+double amount,credit,rate,fee;
+string id,desc;//desc --Description行为描述
+string lineCmd;//一整行命令
+vector<account*> accounts;
+veclist<bill> ac_bill;
+veclist<accountException>ac_error;//错误
+account* ac_ptr;
+date Date(2008,11,1);
+
+
+void ifMoreInput(istream& cmd){
+    if(cmd.peek() != '\n')
+        throw "To many input";
+}
+void ifLessInput(istream& cmd){
+    if(cmd.peek() == '\n')
+        throw "To lass input";
+}
+void record(istream& cmd,vector<bill>::size_type& outIdx,date& outDate,string& outDesc){
+    cmd>>desc;
+    ac_bill.at(outIdx).pushBill(outDate,outDesc);
+    outDesc.clear();
+}
+void assigment(istream& cmd,double& a){//判断是否正确输入
+    ifLessInput(cmd);
+    if(!(cmd>>a))
+        throw "Invalid value";
+}
+void assigment(istream& cmd,size_t& a){
+    ifLessInput(cmd);
+    if(!(cmd>>a))
+        throw "Invalid value";
+}
+void assigment(istream& cmd,int& a){
+    ifLessInput(cmd);
+    if(!(cmd>>a))
+        throw "Invalid value";
+}
+void addAccount(istream& cmd){
+    cmd>>option>>id;
+    if(option == 's'){
+        assigment(cmd,rate);
+        ac_ptr = new savingAccount(Date,id,rate);   
+    }
+    else if(option == 'c'){
+        assigment(cmd,credit);
+        assigment(cmd,rate);
+        assigment(cmd,fee);
+        ac_ptr = new creditAccount(Date,id,credit,rate,fee);
+    }
+    else{
+        throw "Input error";
+    }
+    ifMoreInput(cmd);
+    accounts.push_back(ac_ptr);
+    ac_bill.push_back(new bill(ac_ptr));
+    ac_bill.back().pushBill(Date,"crea");
+}
+void deposit(istream& cmd){
+    assigment(cmd,idx);
+    assigment(cmd,amount);
+    ifLessInput(cmd);
+    accounts.at(idx)->deposit(Date,amount);
+    record(cmd,idx,Date,desc);
+}
+void withdraw(istream& cmd){
+    assigment(cmd,idx);
+    assigment(cmd,amount);
+    ifLessInput(cmd);
+    accounts.at(idx)->withdraw(Date,amount);
+    record(cmd,idx,Date,desc);
+}
+void show(istream& cmd){
+    ifMoreInput(cmd);
+    for(auto i = 0;i < accounts.size();++i){
+        cout<<"[" <<i<<"] ";
+        accounts[i]->show();
+        cout<<endl;
+    }
+}
+void changeDay(istream& cmd){
+    assigment(cmd,day);
+    ifMoreInput(cmd);
+    if(day < Date.getDay() || day > Date.getMaxDay())
+        throw  "Invalid day";
+    Date.changeDay(day);
+}
+void nextMonth(istream& cmd){
+    ifMoreInput(cmd);
+    if(Date.getMonth() == 12)
+        Date = date(Date.getYear()+1,1,1);
+    else
+        Date = date(Date.getYear(),Date.getMonth()+1,1);
+    for(int i = 0;i < accounts.size();++i)
+        accounts[i]->settle(Date);
+
+}
+date readDate(istream& cmd){
+    int year,month,day;
+    assigment(cmd,year);
+    cmd.ignore(100,_DATE_SEPARATOR_);
+    assigment(cmd,month);
+    cmd.ignore(100,_DATE_SEPARATOR_);
+    assigment(cmd,day);
+    return date(year,month,day);
+}
+void query(istream& cmd){
+    assigment(cmd,idx);
+    date first = readDate(cmd);
+    ifLessInput(cmd);
+    date last = readDate(cmd);
+    if(last < first)
+        dateSwap(first,last);
+    for(auto i = 0;i < ac_bill.at(idx).size();++i)
+        if(ac_bill[idx].getDate(i) < last && first < ac_bill[idx].getDate(i))
+            ac_bill[idx].show(i);
+}
+bool ExT(istream& cmd){
+    ifMoreInput(cmd);
+    return false;
+}
+bool executeCmd(istream& cmd){
+    cmd>>option;
+    switch(option){
+        case 'a':
+            addAccount(cmd);
+            break;
+        case 'd':
+            deposit(cmd);
+            break;
+        case 'w':
+            withdraw(cmd);
+            break;
+        case 's':
+            show(cmd);
+            break;
+        case 'c':
+            changeDay(cmd);
+            break;
+        case 'n':
+            nextMonth(cmd);
+            break;
+        case 'q':
+            query(cmd);
+            break;
+        case 'e':
+            return ExT(cmd);
+        default:
+            throw "Input error";
+    }
+    return true;
 }
 
-
-inline void valuation(istream& in, double& a) { if (!(in >> a)) { throw "Invalid number"; } }
-
-
-
-
-class Accexception :public runtime_error {
-private:
-	Account* acc;
-public:
-	Accexception(const char* err, Account* ACC) :runtime_error(err), acc(ACC) {}
-	Account* getAcc() { return acc; }
-	const char* what()const throw() { return runtime_error::what(); }
-};
-
-
-
-
-char type;
-int idx, day;
-double amount, credit, rate, fee;
-string id, desc, record;
-Date date1, date2;
-Account* account;
-Date date(2008, 11, 1);
-vector<Account*> accounts;
-veclist<Accexception> ac_error;
-void start(char cmd, istream& in) {
-	switch (cmd) {
-	case 'a':
-		in >> type >> id;
-		if (type == 's') {
-			valuation(in, rate);
-			account = new SavingsAccount(date, id, rate);
-		}
-		else if (type == 'c') {
-			in >> credit >> rate >> fee;
-			account = new CreditAccount(date, id, credit, rate, fee);
-		}
-		else {
-			throw "Input error";
-		}
-		accounts.push_back(account);
-		break;
-	case 'd':
-		in >> idx >> amount;
-		getline(in, desc);
-		accounts[idx]->deposit(date, amount, desc);
-		break;
-	case 'w':
-		in >> idx >> amount;
-		getline(in, desc);
-		if (idx >= accounts.size()) {
-			throw "NO user";
-		}
-		try {
-			accounts[idx]->withdraw(date, amount, desc);
-		}
-		catch (const char* e) {
-            Accexception* a_e= new Accexception(e,accounts[idx]);
-			ac_error.push_back(a_e);
-			throw ac_error.back();
-		}
-		break;
-	case 's':
-		if (in >> cmd) {
-			throw "To many input";
-		}
-		for (int i = 0; i < accounts.size(); i++) {
-			cout << "[" << i << "] ";
-			accounts[i]->show();
-			cout << endl;
-		}
-		break;
-	case 'c':
-		in >> day;
-		if (day < date.getDay())
-			throw  "You cannot specify a previous day";
-		else if (day > date.getMaxDay()) {
-			throw  "Invalid day";
-		}
-		else
-			date = Date(date.getYear(), date.getMonth(), day);
-		break;
-	case 'n':
-		if (in >> cmd) {
-			throw "TO many input";
-		}
-		if (date.getMonth() == 12)
-			date = Date(date.getYear() + 1, 1, 1);
-		else
-			date = Date(date.getYear(), date.getMonth() + 1, 1);
-		for (int i = 0; i < accounts.size(); ++i) {
-			accounts[i]->settle(date);
-		}
-		break;
-	case 'q':
-		date1 = Date::read(in);
-		date2 = Date::read(in);
-		Account::query(date1, date2);
-		break;
-	default:
-		throw "Input error";
-	}
+void readCmdFile(ifstream& inf){
+    while(inf.peek()!= EOF)
+        executeCmd(inf);
 }
 
-void read(char& cmd, istream& inf) {
-	while (inf >> cmd) {
-		try {
-			start(cmd, inf);
-		}
-		catch (const char* e) {
-		}
-	}
+void clearBuff(char* buff){
+    for(int i = 0;i < 50;++i)
+        buff[i] = '\0';
 }
-int main() {
-	ifstream inf;
-	ofstream outf;
-	inf.open("./cmd.txt");
-	outf.open("./cmd.txt", ofstream::app);
-	char cmd;
-	string record;
-	read(cmd, inf);
-	stringbuf buf;
-	istream in(&buf);
-	char buff[50];
-	cout << "(a)add account (d)deposit (w)withdraw (s)show (c)change day (n)next month (q)query (e)exit" << endl;
-	do {
-		date.show();
-		cout << "\tTotal: " << Account::getTotal() << "\tcommand> ";
-		cin.getline(buff, 50);
-		buf.str(buff);
-		in.get(cmd);
-		if (cmd == 'e')
-			break;
-		try {
-			start(cmd, in);
-			record.append(buff);
-			record.push_back('\n');
-			outf << record;
-		}
-		catch (const char* e) {
-			cout << e << endl;
-		}
-		catch (Accexception& ac_error) {
-			ac_error.getAcc()->show();
-			cout << endl;
-			cerr << ac_error.what() << endl;
-		}
-		record.clear();
-		in.clear();
-	} while (cmd != 'e');
-	for (int i = 0; i < accounts.size(); ++i) {
-		delete accounts[i];
-	}
-	inf.close();
-	outf.close();
-	return 0;
+
+void copyBuff(istream& in,char* buff){
+    in.getline(buff,50);
+    for(int i = 0;i < 50;++i){
+        if(buff[i] == '\0'){
+            buff[i] = '\n';
+            break;
+        }
+    }
 }
