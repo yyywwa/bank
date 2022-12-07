@@ -76,7 +76,7 @@ private:
 		start = new T[n]();
 		finish = start;
 		end_of_storage = start + n;
-		std::cout<<"what ther is vector creat"<<std::endl;
+		//std::cout<<"what ther is vector creat"<<std::endl;
 	}
 
 public:
@@ -148,7 +148,7 @@ public:
 	}
 
 	~vector() {
-		std::cout<<"delete vector size = "<<end_of_storage - start<<std::endl;
+		//std::cout<<"delete vector size = "<<end_of_storage - start<<std::endl;
 		delete[] start;}
 
 	void push_back(const T& x) {

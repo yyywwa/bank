@@ -127,3 +127,15 @@ public:
 	account* getAcc();
 	const char* what()const throw();
 };
+
+class myFile{	
+private:
+	std::ifstream inf;
+	std::ofstream outf;
+public:
+	myFile(const std::string& fileName);
+	~myFile();
+	void writeFile(const std::string& lineCmd);
+	std::ifstream& getInf();
+	std::ofstream& getOutf();
+};

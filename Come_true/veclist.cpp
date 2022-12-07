@@ -58,12 +58,12 @@ public:
 
 	~veclist() {
 		size_type size = index.size();
-		std::cout<<std::endl;
+		//std::cout<<std::endl;
 		for(size_type i = 0;i<size && index[i]!=nullptr;++i){
-			std::cout<<"delete "<<"array["<<i<<"] : "<<index[i]<<std::endl;
+			//std::cout<<"delete "<<"array["<<i<<"] : "<<index[i]<<std::endl;
 			delete index[i];
 		}
-		std::cout<<std::endl;
+		//std::cout<<std::endl;
 	}
 
 	void push_back(const T& value) {
@@ -110,11 +110,11 @@ public:
 		if (0 <= first && last <= index.size()) {
 			size_type count = last - first;
 			for (size_type i = 0; i < count; ++i) {
-				std::cout<<"erase array["<<first+i<<"]= "<<*index[first+i]
-				<<" : "<<index[first+i]<<std::endl; 
+				//std::cout<<"erase array["<<first+i<<"]= "<<*index[first+i]
+				//<<" : "<<index[first+i]<<std::endl; 
 				delete index[first + i];
 			}
-			std::cout<<std::endl;
+			//std::cout<<std::endl;
 			index.erase(index.begin()+first,index.begin()+last);
 		}
 	}//不删除会造成覆盖，导致内存泄漏

@@ -159,13 +159,18 @@ bool executeCmd(istream& cmd){
 }
 
 void readCmdFile(ifstream& inf){
-    while(inf.peek()!= EOF)
-        executeCmd(inf);
+    while(inf.peek()!= EOF){
+        try{ 
+            executeCmd(inf);
+        }catch(const char* e){
+            
+        }
+    }
 }
 
 void clearBuff(char* buff){
     for(int i = 0;i < 50;++i)
-        buff[i] = '\0';
+        *(buff+i) = '\0';
 }
 
 void copyBuff(istream& in,char* buff){
