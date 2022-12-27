@@ -89,6 +89,7 @@ public:
 	bill(account* outMaster);
 	void pushBill(const date& outDate,const std::string& outDesc);
 	void show(veclist<dateBill>::size_type it);
+	void show();
 	veclist<dateBill>& getDateBill();
 	veclist<dateBill>::size_type size();
 	const date& getDate(veclist<dateBill>::size_type it);
@@ -121,11 +122,12 @@ public:
 
 class accountException:public std::runtime_error{
 private:
-	account* _acc;
+	account* _master;//*出异常的对象
 public:
 	accountException(const char* error,account* outAcc);
 	account* getAcc();
 	const char* what()const throw();
+	void show();
 };
 
 class myFile{	
@@ -138,4 +140,29 @@ public:
 	void writeFile(const std::string& lineCmd);
 	std::ifstream& getInf();
 	std::ofstream& getOutf();
+	bool is_open_read();
+	bool is_open_write();
+};
+
+class cmdFile:public myFile{
+public:
+	cmdFile(const std::string& fileName);
+	void readCmdFile(bool (*fuction) (std::istream&));
+};
+
+class recordCmd{
+private:
+	std::stringbuf _buf;
+	char _buffer[50];
+	std::string _record;
+	std::istream _itm;//* itm --istream 缩写
+public:
+	recordCmd();
+	void readCmd(std::istream& in);
+	void clearBuff();
+	void clearIstream();
+	void record();
+	std::istream& getIstream();
+	std::string& getRecord();
+	bool ifEnd();
 };

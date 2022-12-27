@@ -19,6 +19,14 @@ void bill::show(veclist<dateBill>::size_type it){
     std::cout<<"---------------------------------------------"<<std::endl;
 }
 
+void bill::show(){
+    std::cout<<"---------------------------------------------"<<std::endl;
+    std::cout<<"User id: "<<_master->getId()<<std::endl;
+    for(auto it = _dateBill.begin();it!=_dateBill.end();++it)
+        _dateBill[it].show();
+    std::cout<<"---------------------------------------------"<<std::endl;
+}
+
 veclist<dateBill>& bill::getDateBill(){return _dateBill;}
 
 veclist<dateBill>::size_type bill::size(){return _dateBill.size();}

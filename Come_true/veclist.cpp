@@ -67,30 +67,11 @@ public:
 	}
 
 	void push_back(const T& value) {
-		if (index.size() == index.capacity()){
-			index.redouble();
-			iterator temp = new T;
-			*temp = value;
-			index.push_back(temp);
-		}
-		if(index[index.size()] == nullptr){
-			iterator temp = new T;
-			*temp = value;
-			index.push_back(temp);
-		}else{
-			*index[index.size()] = value;
-			index.add_finish();	
-		}
+		index.push_back(new T(value));
 	}
+
 	void push_back(T* pointer){
-		if (index.size() == index.capacity())
-			index.redouble();
-		if(*(index.end()) == nullptr){
-			index.push_back(pointer);
-		}else{
-			*(index.end()) = pointer;
-			index.add_finish();	
-		}
+		index.push_back(pointer);	
 	}
 
 	void pop_back() {
@@ -166,13 +147,6 @@ public:
 	size_type capacity() { return index.capacity(); }
 
 	reference operator[](size_type n) {
-		if(n >= index.size()){
-			iterator temp = nullptr;
-			for(size_type i = index.size();i <= n;++i){
-				iterator temp = new T;
-				index[i] = temp;	
-			}
-		}
 		return *index[n];
 	}
 
