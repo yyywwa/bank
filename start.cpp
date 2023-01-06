@@ -1,54 +1,65 @@
-#include"./Header/account.h"
+#include "./bank.h"
+
+#ifndef _START_CPP
+#define _START_CPP
+
 #define _DATE_SEPARATOR_ '/'
 using namespace std;
+
 char option;//*(a)add account (d)deposit (w)withdraw (s)show 
             //*(c)change day (n)next month (q)query (e)exit 
 int g_day;
-veclist<account*>::size_type idx;
+mystd::veclist<account*>::size_type idx;
 double amount,credit,rate,fee;
 string id,desc;//*desc --Description行为描述
-vector<account*> accounts;
+mystd::vector<account*> accounts;
 account* ac_ptr;
-veclist<bill> ac_bill;
-veclist<accountException>ac_error;//*错误
+mystd::veclist<bill> ac_bill;
+mystd::veclist<accountException>ac_error;//*错误
 date g_Date(2008,11,1);
 
 
-void ifMoreInput(istream& cmd){
+void ifMoreInput(istream& cmd) {
     if(cmd.peek() != '\n')
         throw "To many input";
 }
-void ifLessInput(istream& cmd){
+
+void ifLessInput(istream& cmd) {
     if(cmd.peek() == '\n')
         throw "To lass input";
 }
-void recordDesc(istream& cmd,vector<bill>::size_type& outIdx,date& outDate,string& outDesc){
+
+void recordDesc(istream& cmd,mystd::vector<bill>::size_type& outIdx,date& outDate,string& outDesc) {
     cmd>>desc;
     ac_bill.at(outIdx).pushBill(outDate,outDesc);
     outDesc.clear();
 }
-void assigment(istream& cmd,double& a){//*判断是否正确输入
+
+void assigment(istream& cmd,double& a) {//*判断是否正确输入
     ifLessInput(cmd);
     if(!(cmd>>a))
         throw "Invalid value";
 }
-void assigment(istream& cmd,size_t& a){
+
+void assigment(istream& cmd,size_t& a) {
     ifLessInput(cmd);
     if(!(cmd>>a))
         throw "Invalid value";
 }
-void assigment(istream& cmd,int& a){
+
+void assigment(istream& cmd,int& a) {
     ifLessInput(cmd);
     if(!(cmd>>a))
         throw "Invalid value";
 }
-void addAccount(istream& cmd){
+
+void addAccount(istream& cmd) {
     cmd>>option>>id;
-    if(option == 's'){
+    if(option == 's') {
         assigment(cmd,rate);
         ac_ptr = new savingAccount(g_Date,id,rate);   
     }
-    else if(option == 'c'){
+    else if(option == 'c') {
         assigment(cmd,credit);
         assigment(cmd,rate);
         assigment(cmd,fee);
@@ -62,7 +73,8 @@ void addAccount(istream& cmd){
     ac_bill.push_back(new bill(ac_ptr));
     ac_bill.back().pushBill(g_Date,"create");
 }
-void deposit(istream& cmd){
+
+void deposit(istream& cmd) {
     assigment(cmd,idx);
     assigment(cmd,amount);
     ifLessInput(cmd);
@@ -74,7 +86,8 @@ void deposit(istream& cmd){
     }
     recordDesc(cmd,idx,g_Date,desc);
 }
-void withdraw(istream& cmd){
+
+void withdraw(istream& cmd) {
     assigment(cmd,idx);
     assigment(cmd,amount);
     ifLessInput(cmd);
@@ -86,22 +99,25 @@ void withdraw(istream& cmd){
     }
     recordDesc(cmd,idx,g_Date,desc);
 }
-void show(istream& cmd){
+
+void show(istream& cmd) {
     ifMoreInput(cmd);
-    for(auto i = 0;i < accounts.size();++i){
+    for(auto i = 0;i < accounts.size();++i) {
         cout<<"[" <<i<<"] ";
         accounts[i]->show();
         cout<<endl;
     }
 }
-void changeDay(istream& cmd){
+
+void changeDay(istream& cmd) {
     assigment(cmd,g_day);
     ifMoreInput(cmd);
     if(g_day < g_Date.getDay() || g_day > g_Date.getMaxDay())
         throw  "Invalid day";
     g_Date.changeDay(g_day);
 }
-void nextMonth(istream& cmd){
+
+void nextMonth(istream& cmd) {
     ifMoreInput(cmd);
     if(g_Date.getMonth() == 12)
         g_Date = date(g_Date.getYear()+1,1,1);
@@ -111,7 +127,8 @@ void nextMonth(istream& cmd){
         accounts[i]->settle(g_Date);
 
 }
-date readDate(istream& cmd){
+
+date readDate(istream& cmd) {
     int year,month,day;
     assigment(cmd,year);
     cmd.ignore(100,_DATE_SEPARATOR_);
@@ -120,7 +137,8 @@ date readDate(istream& cmd){
     assigment(cmd,day);
     return date(year,month,day);
 }
-void query(istream& cmd){
+
+void query(istream& cmd) {
     assigment(cmd,idx);
     date first = readDate(cmd);
     ifLessInput(cmd);
@@ -131,13 +149,15 @@ void query(istream& cmd){
         if(ac_bill[idx].getDate(i) < last && first < ac_bill[idx].getDate(i))
             ac_bill[idx].show(i);
 }
-bool ExT(istream& cmd){
+
+bool ExT(istream& cmd) {
     ifMoreInput(cmd);
     return false;
 }
-bool executeCmd(istream& cmd){
+
+bool executeCmd(istream& cmd) {
     cmd>>option;
-    switch(option){
+    switch(option) {
         case 'a':
             addAccount(cmd);
             break;
@@ -168,3 +188,4 @@ bool executeCmd(istream& cmd){
     return true;
 }
 
+#endif

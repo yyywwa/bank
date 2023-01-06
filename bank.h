@@ -1,10 +1,15 @@
-#include"../Come_true/veclist.cpp"
+#include "./vector.cpp"
+#include "./veclist.cpp"
 #include<iostream>
 #include<sstream>
 #include<fstream>
 #include<stdexcept>
 #include<string>
 #include<cmath>
+
+#ifndef _BANK_H
+#define _BANK_H
+
 class date{
 private:
 	int year, month, day;
@@ -68,7 +73,7 @@ public:
 class dateBill{
 private:
 	date _date;
-	veclist<std::string> _desc;
+	mystd::veclist<std::string> _desc;
 public:
 	dateBill();
 	dateBill(const date& outDate,const std::string& outDesc);
@@ -77,22 +82,22 @@ public:
 	bool operator==(const date& outDate);
 	void show();
 	const date& getDate();
-	veclist<std::string>& getDesc();
+	mystd::veclist<std::string>& getDesc();
 };
 
 class bill{	
 private:
 	account* _master = nullptr;
-	veclist<dateBill>  _dateBill;
+	mystd::veclist<dateBill>  _dateBill;
 public:
 	bill();
 	bill(account* outMaster);
 	void pushBill(const date& outDate,const std::string& outDesc);
-	void show(veclist<dateBill>::size_type it);
+	void show(mystd::veclist<dateBill>::size_type it);
 	void show();
-	veclist<dateBill>& getDateBill();
-	veclist<dateBill>::size_type size();
-	const date& getDate(veclist<dateBill>::size_type it);
+	mystd::veclist<dateBill>& getDateBill();
+	mystd::veclist<dateBill>::size_type size();
+	const date& getDate(mystd::veclist<dateBill>::size_type it);
 };
 
 class creditAccount:public account{
@@ -128,6 +133,7 @@ public:
 	account* getAcc();
 	const char* what()const throw();
 	void show();
+	~accountException();
 };
 
 class myFile{	
@@ -166,3 +172,5 @@ public:
 	std::string& getRecord();
 	bool ifEnd();
 };
+
+#endif
